@@ -18,8 +18,7 @@ function calculateFractalPoint(c: Complex, max: number) {
 
 export interface RenderFractalWindow {
   size: number;
-  centerX: number;
-  centerY: number;
+  center: Complex;
   zoom: number;
 }
 
@@ -63,38 +62,43 @@ const colorizerMap: { [key in Colorizer]: ColorizerFn } = {
 };
 
 export function screenCoordinatesToComplex(
-  { size, centerX, centerY, zoom }: RenderFractalWindow,
+  { size, center, zoom }: RenderFractalWindow,
   x: number,
   y: number
 ): Complex {
   const zoomByWidth = zoom / size;
 
-  return new Complex(zoomByWidth * (x - centerX), zoomByWidth * (y - centerY));
+  // return new Complex(zoomByWidth * (x - centerX), zoomByWidth * (y - centerY));
+  return new Complex(
+    zoomByWidth * (x - size / 2),
+    zoomByWidth * (y - size / 2)
+  ).add(center);
 }
 
 export function complexToScreenCoordinates(
-  { size, centerX, centerY, zoom }: RenderFractalWindow,
+  { size, center, zoom }: RenderFractalWindow,
   c: Complex
 ): { x: number; y: number } {
   const zoomByWidth = zoom / size;
 
+  const d = c.sub(center);
+
   return {
-    x: centerX + c.re / zoomByWidth,
-    y: centerY + c.im / zoomByWidth,
+    x: d.re / zoomByWidth + size / 2,
+    y: d.im / zoomByWidth + size / 2,
   };
+
+  // return {
+  //   x: centerX + c.re / zoomByWidth,
+  //   y: centerY + c.im / zoomByWidth,
+  // };
 }
 
 export function renderFractal(
   canvas: HTMLCanvasElement,
-  {
-    size,
-    maxIterations,
-    centerX,
-    centerY,
-    zoom,
-    colorizer,
-  }: RenderFractalOptions
+  { size, maxIterations, center, zoom, colorizer }: RenderFractalOptions
 ) {
+  const win = { size, center, zoom };
   let ctx = canvas.getContext("2d");
   if (!ctx) {
     return;
@@ -106,13 +110,9 @@ export function renderFractal(
 
   console.time("renderFractal");
   let i = 0;
-  const zoomBySize = zoom / size;
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
-      const c = new Complex(
-        zoomBySize * (x - centerX),
-        zoomBySize * (y - centerY)
-      );
+      const c = screenCoordinatesToComplex(win, x, y);
       let z = calculateFractalPoint(c, maxIterations);
       i += 4;
       colorizerFn(z, data, i);

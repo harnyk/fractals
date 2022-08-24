@@ -10,19 +10,20 @@ import {
 } from "react";
 import {
   Colorizer,
+  complexToScreenCoordinates,
   renderFractal,
+  RenderFractalWindow,
   screenCoordinatesToComplex,
 } from "./fractals";
 
 interface FractalViewProps {
   size: number;
   zoom: number;
-  centerX: number;
-  centerY: number;
+  center: Complex;
   iterations: number;
   colorizer: Colorizer;
   onMouseMove: (x: number, y: number, c: Complex) => void;
-  onClick: (x: number, y: number, c: Complex) => void;
+  onChangeRenderWindow?: (renderWindow: RenderFractalWindow) => void;
 }
 
 interface DragState {
@@ -31,14 +32,13 @@ interface DragState {
 }
 
 export const FractalView: FC<FractalViewProps> = ({
-  centerX,
-  centerY,
+  center,
   size,
   iterations,
   zoom,
   colorizer,
   onMouseMove,
-  onClick,
+  onChangeRenderWindow,
 }) => {
   const canvas = useRef<HTMLCanvasElement>(null);
   const overlay = useRef<HTMLCanvasElement>(null);
@@ -49,8 +49,7 @@ export const FractalView: FC<FractalViewProps> = ({
       renderFractal(canvas.current, {
         size,
         zoom,
-        centerX,
-        centerY,
+        center,
         maxIterations: iterations,
         colorizer,
       });
@@ -62,16 +61,7 @@ export const FractalView: FC<FractalViewProps> = ({
       if (canvas.current) {
         const x = e.clientX - canvas.current.offsetLeft;
         const y = e.clientY - canvas.current.offsetTop;
-        const c = screenCoordinatesToComplex(
-          {
-            size,
-            zoom,
-            centerX,
-            centerY,
-          },
-          x,
-          y
-        );
+        const c = screenCoordinatesToComplex({ size, zoom, center }, x, y);
         if (onMouseMove) {
           onMouseMove(x, y, c);
         }
@@ -108,26 +98,8 @@ export const FractalView: FC<FractalViewProps> = ({
       const y1 = Math.min(dragState.startY, y);
       const y2 = Math.max(dragState.startY, y);
       console.log(x1, x2, y1, y2);
-      const c1 = screenCoordinatesToComplex(
-        {
-          size,
-          zoom,
-          centerX,
-          centerY,
-        },
-        x1,
-        y1
-      );
-      const c2 = screenCoordinatesToComplex(
-        {
-          size,
-          zoom,
-          centerX,
-          centerY,
-        },
-        x2,
-        y2
-      );
+      const c1 = screenCoordinatesToComplex({ size, zoom, center }, x1, y1);
+      const c2 = screenCoordinatesToComplex({ size, zoom, center }, x2, y2);
       const newCenter = c1.add(c2).div(2);
       const newZoom = (zoom * (x2 - x1)) / size;
       console.log(newCenter, newZoom);
@@ -148,22 +120,23 @@ export const FractalView: FC<FractalViewProps> = ({
       if (canvas.current) {
         const x = e.clientX - canvas.current.offsetLeft;
         const y = e.clientY - canvas.current.offsetTop;
+        const newZoom = zoom / 2;
         const c = screenCoordinatesToComplex(
-          {
-            size,
-            zoom,
-            centerX,
-            centerY,
-          },
+          { size, zoom: newZoom, center },
           x,
           y
         );
-        if (onClick) {
-          onClick(x, y, c);
+
+        if (onChangeRenderWindow) {
+          onChangeRenderWindow({
+            size,
+            zoom: newZoom,
+            center: c,
+          });
         }
       }
     },
-    [canvas, size, zoom, onMouseMove]
+    [canvas.current, size, zoom, center, onChangeRenderWindow]
   );
 
   const handleMouseDown = useCallback(
@@ -182,7 +155,6 @@ export const FractalView: FC<FractalViewProps> = ({
     (e: MouseEvent<HTMLCanvasElement>) => {
       console.log("handleMouseUp");
       if (dragState) {
-        debugger;
         const x = e.clientX - canvas.current!.offsetLeft;
         const y = e.clientY - canvas.current!.offsetTop;
         handleDragEnd(x, y);
@@ -192,7 +164,7 @@ export const FractalView: FC<FractalViewProps> = ({
   );
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative", width: "100%", height: size }}>
       <canvas
         ref={canvas}
         style={{ cursor: "crosshair", top: 0, left: 0, position: "absolute" }}
@@ -206,8 +178,8 @@ export const FractalView: FC<FractalViewProps> = ({
         onMouseMove={handleMouseMove}
         onClick={handleClick}
         style={{ cursor: "crosshair", top: 0, left: 0, position: "absolute" }}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
+        // onMouseDown={handleMouseDown}
+        // onMouseUp={handleMouseUp}
       />
     </div>
   );
