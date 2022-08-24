@@ -1,10 +1,14 @@
 import Complex from "complex.js";
 import { useState } from "react";
-import { complexToScreenCoordinates } from "./fractals";
+import { ColorizerSelect } from "./ColorizerSelect";
+import { Colorizer, complexToScreenCoordinates } from "./fractals";
 import { FractalView } from "./FractalView";
 
 function App() {
-  const [[x, y, c], setPoint] = useState([0, 0, new Complex(0, 0)]);
+  const [[x, y, c], setHoverPoint] = useState([0, 0, new Complex(0, 0)]);
+  const [colorizer, setColorizer] = useState<Colorizer>(
+    Colorizer.BlackAndWhite
+  );
 
   const [renderWindow, setRenderWindow] = useState({
     size: 600,
@@ -14,7 +18,7 @@ function App() {
   });
 
   const handleMouseMove = (x: number, y: number, c: Complex) => {
-    setPoint([x, y, c]);
+    setHoverPoint([x, y, c]);
   };
 
   const handleClick = (x: number, y: number, c: Complex) => {
@@ -35,10 +39,16 @@ function App() {
         zoom={renderWindow.zoom}
         centerX={renderWindow.centerX}
         centerY={renderWindow.centerY}
-        iterations={100}
+        iterations={200}
+        colorizer={colorizer}
         onMouseMove={handleMouseMove}
         onClick={handleClick}
       />
+
+      <div>
+        <ColorizerSelect value={colorizer} onChange={setColorizer} />
+      </div>
+
       <pre>{JSON.stringify({ x, y, c }, null, 2)}</pre>
     </div>
   );

@@ -1,11 +1,14 @@
 import Complex from "complex.js";
 
 function calculateFractalPoint(c: Complex, max: number) {
-  let z = new Complex(0, 0);
+  let z = new Complex(0);
   let n = 0;
   while (n < max) {
     z = z.mul(z).add(c);
-    if (z.abs() > 2) {
+    // if (z.abs() > 2) {
+    //   return z;
+    // }
+    if (z.im > 2 || z.im < -2 || z.re > 2 || z.re < -2) {
       return z;
     }
     n++;
@@ -22,23 +25,39 @@ export interface RenderFractalWindow {
 
 export interface RenderFractalOptions extends RenderFractalWindow {
   maxIterations: number;
+  colorizer: Colorizer;
 }
 
-type Colorizer = (z: Complex, buf: Uint8ClampedArray, index: number) => void;
+type ColorizerFn = (z: Complex, buf: Uint8ClampedArray, index: number) => void;
 
-const colorizerMap: { [key: string]: Colorizer } = {
-  default: (z: Complex, buf: Uint8ClampedArray, index: number) => {
+export enum Colorizer {
+  Psychedelic = "psychedelic",
+  Rainbow = "rainbow",
+  BlackAndWhite = "blackAndWhite",
+}
+
+const colorizerMap: { [key in Colorizer]: ColorizerFn } = {
+  psychedelic: (z: Complex, buf: Uint8ClampedArray, index: number) => {
+    buf[index] = Math.floor(z.re * 255);
+    buf[index + 1] = Math.floor(z.im * 255);
+    buf[index + 2] = Math.floor(z.re * 255);
+    buf[index + 3] = 255;
+  },
+  rainbow: (z: Complex, buf: Uint8ClampedArray, index: number) => {
+    const v = z.abs();
+    const brightness = v * 255;
+    const hue = (z.arg() / (2 * Math.PI) + 1) * 255;
+    buf[index] = hue;
+    buf[index + 1] = brightness;
+    buf[index + 2] = 255 - hue;
+    buf[index + 3] = 255;
+  },
+  blackAndWhite: (z: Complex, buf: Uint8ClampedArray, index: number) => {
     const v = z.abs();
     const brightness = v * 255;
     buf[index] = brightness;
     buf[index + 1] = brightness;
     buf[index + 2] = brightness;
-    buf[index + 3] = 255;
-  },
-  psychedelic: (z: Complex, buf: Uint8ClampedArray, index: number) => {
-    buf[index] = Math.floor(z.re * 255);
-    buf[index + 1] = Math.floor(z.im * 255);
-    buf[index + 2] = Math.floor(z.re * 255);
     buf[index + 3] = 255;
   },
 };
@@ -67,7 +86,14 @@ export function complexToScreenCoordinates(
 
 export function renderFractal(
   canvas: HTMLCanvasElement,
-  { size, maxIterations, centerX, centerY, zoom }: RenderFractalOptions
+  {
+    size,
+    maxIterations,
+    centerX,
+    centerY,
+    zoom,
+    colorizer,
+  }: RenderFractalOptions
 ) {
   let ctx = canvas.getContext("2d");
   if (!ctx) {
@@ -76,7 +102,7 @@ export function renderFractal(
   let imageData = ctx.createImageData(size, size);
   let data = imageData.data;
 
-  const colorizer = colorizerMap.default;
+  const colorizerFn = colorizerMap[colorizer];
 
   console.time("renderFractal");
   let i = 0;
@@ -89,7 +115,7 @@ export function renderFractal(
       );
       let z = calculateFractalPoint(c, maxIterations);
       i += 4;
-      colorizer(z, data, i);
+      colorizerFn(z, data, i);
     }
   }
   ctx.putImageData(imageData, 0, 0);
