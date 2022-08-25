@@ -25,7 +25,12 @@ function App() {
   };
 
   return (
-    <div>
+    <div
+      style={{
+        margin: 100,
+        padding: 100,
+      }}
+    >
       <FractalView
         size={renderWindow.size}
         zoom={renderWindow.zoom}
