@@ -94,6 +94,27 @@ export function complexToScreenCoordinates(
   // };
 }
 
+export function renderFractalOnImageData(
+  data: Uint8ClampedArray,
+  { size, maxIterations, center, zoom, colorizer }: RenderFractalOptions
+) {
+  const win = { size, center, zoom };
+
+  const colorizerFn = colorizerMap[colorizer];
+
+  console.time("renderFractal");
+  let i = 0;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const c = screenCoordinatesToComplex(win, x, y);
+      let z = calculateFractalPoint(c, maxIterations);
+      i += 4;
+      colorizerFn(z, data, i);
+    }
+  }
+  console.timeEnd("renderFractal");
+}
+
 export function renderFractal(
   canvas: HTMLCanvasElement,
   { size, maxIterations, center, zoom, colorizer }: RenderFractalOptions
@@ -109,15 +130,13 @@ export function renderFractal(
   const colorizerFn = colorizerMap[colorizer];
 
   console.time("renderFractal");
-  let i = 0;
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const c = screenCoordinatesToComplex(win, x, y);
-      let z = calculateFractalPoint(c, maxIterations);
-      i += 4;
-      colorizerFn(z, data, i);
-    }
-  }
+  renderFractalOnImageData(data, {
+    size,
+    maxIterations,
+    center,
+    zoom,
+    colorizer,
+  });
   ctx.putImageData(imageData, 0, 0);
   console.timeEnd("renderFractal");
 }

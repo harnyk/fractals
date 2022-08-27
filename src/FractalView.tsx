@@ -1,8 +1,9 @@
+import { css } from "@emotion/css";
 import Complex from "complex.js";
 import { FC, useEffect, useRef } from "react";
+import { renderFractalWithWebWorker } from "./asyncRenderer";
 import {
   Colorizer,
-  renderFractal,
   RenderFractalWindow,
   screenCoordinatesToComplex,
 } from "./fractals";
@@ -12,7 +13,6 @@ import {
   useZoomOnClick,
   useZoomWindow,
 } from "./tools";
-import { css } from "@emotion/css";
 
 interface FractalViewProps {
   size: number;
@@ -67,7 +67,7 @@ export const FractalView: FC<FractalViewProps> = ({
 
   useEffect(() => {
     if (canvas.current) {
-      renderFractal(canvas.current, {
+      renderFractalWithWebWorker(canvas.current, {
         size,
         zoom,
         center,
