@@ -1,12 +1,10 @@
 import Complex from "complex.js";
 import { useState } from "react";
 import { ColorizerSelect } from "./ColorizerSelect";
-import {
-  Colorizer,
-  complexToScreenCoordinates,
-  RenderFractalWindow,
-} from "./fractals";
+import { Colorizer, RenderFractalWindow } from "./fractals";
 import { FractalView } from "./FractalView";
+import { MouseTool } from "./tools";
+import { ToolSelect } from "./ToolSelect";
 
 function App() {
   const [[x, y, c], setHoverPoint] = useState([0, 0, new Complex(0, 0)]);
@@ -19,6 +17,8 @@ function App() {
     zoom: 4,
     center: new Complex(0, 0),
   });
+
+  const [mouseTool, setMouseTool] = useState<MouseTool>(MouseTool.ZoomIn);
 
   const handleMouseMove = (x: number, y: number, c: Complex) => {
     setHoverPoint([x, y, c]);
@@ -37,12 +37,14 @@ function App() {
         center={renderWindow.center}
         iterations={200}
         colorizer={colorizer}
+        mouseTool={mouseTool}
         onMouseMove={handleMouseMove}
         onChangeRenderWindow={setRenderWindow}
       />
 
       <div>
         <ColorizerSelect value={colorizer} onChange={setColorizer} />
+        <ToolSelect value={mouseTool} onChange={setMouseTool} />
       </div>
 
       <pre>{JSON.stringify({ x, y, c }, null, 2)}</pre>
