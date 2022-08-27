@@ -31,6 +31,10 @@ function App() {
         padding: 100,
       }}
     >
+      <div>
+        <ColorizerSelect value={colorizer} onChange={setColorizer} />
+        <ToolSelect value={mouseTool} onChange={setMouseTool} />
+      </div>
       <FractalView
         size={renderWindow.size}
         zoom={renderWindow.zoom}
@@ -41,11 +45,6 @@ function App() {
         onMouseMove={handleMouseMove}
         onChangeRenderWindow={setRenderWindow}
       />
-
-      <div>
-        <ColorizerSelect value={colorizer} onChange={setColorizer} />
-        <ToolSelect value={mouseTool} onChange={setMouseTool} />
-      </div>
 
       <pre>{JSON.stringify({ x, y, c }, null, 2)}</pre>
     </div>

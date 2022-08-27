@@ -1,5 +1,8 @@
 import { FC, useCallback } from "react";
+import { TbRainbow } from "react-icons/tb";
+import {GiEmptyChessboard, GiSuperMushroom} from 'react-icons/gi'
 import { Colorizer } from "./fractals";
+import { RadioButtonsGroup } from "./RadioButtonsGroup";
 
 interface ColorizerSelectProps {
   value: Colorizer;
@@ -11,19 +14,14 @@ export const ColorizerSelect: FC<ColorizerSelectProps> = ({
   onChange,
 }) => {
   return (
-    <div>
-      {Object.entries(Colorizer).map(([name, colorizer]) => (
-        <label key={name}>
-          <input
-            type="radio"
-            name="colorizer"
-            value={name}
-            checked={value === colorizer}
-            onChange={() => onChange(colorizer)}
-          />
-          {name}
-        </label>
-      ))}
-    </div>
+    <RadioButtonsGroup
+      value={value}
+      onChange={onChange}
+      options={[
+        { value: Colorizer.BlackAndWhite, icon: <GiEmptyChessboard />, label: "Black and White" },
+        { value: Colorizer.Rainbow, icon: <TbRainbow />, label: "Rainbow" },
+        { value: Colorizer.Psychedelic, icon: <GiSuperMushroom />, label: "Psychedelic" },
+      ]}
+    />
   );
 };
