@@ -9,13 +9,6 @@ interface ToolSelectProps {
 }
 
 export const ToolSelect: FC<ToolSelectProps> = ({ value, onChange }) => {
-  const handleToolChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      onChange(event.target.value as MouseTool);
-    },
-    [onChange]
-  );
-  //Radio buttons with icons
   return (
     <RadioButtonsGroup
       value={value}
