@@ -1,14 +1,7 @@
 import Complex from "complex.js";
-import {
-  FC, useEffect,
-  useRef
-} from "react";
-import {
-  Colorizer,
-  renderFractal,
-  RenderFractalWindow
-} from "./fractals";
-import { MouseTool, useZoomIn, useZoomWindow } from "./tools";
+import { FC, useEffect, useRef } from "react";
+import { Colorizer, renderFractal, RenderFractalWindow } from "./fractals";
+import { MouseTool, useZoomOnClick, useZoomWindow } from "./tools";
 
 interface FractalViewProps {
   size: number;
@@ -36,9 +29,17 @@ export const FractalView: FC<FractalViewProps> = ({
   const canvas = useRef<HTMLCanvasElement>(null);
   const overlay = useRef<HTMLCanvasElement>(null);
 
-  const zoomInTool = useZoomIn(
+  const zoomInTool = useZoomOnClick(
     { center, size, zoom },
     overlay,
+    2,
+    onChangeRenderWindow
+  );
+
+  const zoomOutTool = useZoomOnClick(
+    { center, size, zoom },
+    overlay,
+    0.5,
     onChangeRenderWindow
   );
 
@@ -48,7 +49,12 @@ export const FractalView: FC<FractalViewProps> = ({
     onChangeRenderWindow
   );
 
-  const tool = mouseTool === MouseTool.ZoomIn ? zoomInTool : zoomWindowTool;
+  const tool =
+    mouseTool === MouseTool.ZoomIn
+      ? zoomInTool
+      : mouseTool === MouseTool.ZoomOut
+      ? zoomOutTool
+      : zoomWindowTool;
 
   useEffect(() => {
     if (canvas.current) {

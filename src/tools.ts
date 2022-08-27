@@ -20,17 +20,17 @@ function getMousePosition(event: MouseEvent<HTMLCanvasElement>) {
   };
 }
 
-export const useZoomIn = (
+export const useZoomOnClick = (
   win: RenderFractalWindow,
   canvas: RefObject<HTMLCanvasElement>,
+  zoomFactor: number,
   onChangeRenderWindow?: (newWin: RenderFractalWindow) => void
 ) => {
   const handleClick = useCallback(
     (e: MouseEvent<HTMLCanvasElement>) => {
-      console.log("click");
       if (canvas.current) {
         const { x, y } = getMousePosition(e);
-        const newZoom = win.zoom / 2;
+        const newZoom = win.zoom / zoomFactor;
         const c = screenCoordinatesToComplex(
           { size: win.size, zoom: newZoom, center: win.center },
           x,
@@ -38,7 +38,6 @@ export const useZoomIn = (
         );
 
         if (onChangeRenderWindow) {
-          console.log("change render window because of click");
           onChangeRenderWindow({
             size: win.size,
             zoom: newZoom,
@@ -127,7 +126,6 @@ export const useZoomWindow = (
 
       setDragState(null);
       if (onChangeRenderWindow) {
-        console.log("change render window because of drag");
         onChangeRenderWindow({
           size: win.size,
           zoom: newZoom,
