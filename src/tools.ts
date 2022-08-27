@@ -12,7 +12,7 @@ interface DragState {
   startY: number;
 }
 
-function getMousePosition(event: MouseEvent<HTMLCanvasElement>) {
+export function getMousePosition(event: MouseEvent<HTMLCanvasElement>) {
   const rect = event.currentTarget.getBoundingClientRect();
   return {
     x: event.clientX - rect.left,

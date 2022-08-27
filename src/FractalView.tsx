@@ -1,7 +1,17 @@
 import Complex from "complex.js";
 import { FC, useEffect, useRef } from "react";
-import { Colorizer, renderFractal, RenderFractalWindow } from "./fractals";
-import { MouseTool, useZoomOnClick, useZoomWindow } from "./tools";
+import {
+  Colorizer,
+  renderFractal,
+  RenderFractalWindow,
+  screenCoordinatesToComplex,
+} from "./fractals";
+import {
+  getMousePosition,
+  MouseTool,
+  useZoomOnClick,
+  useZoomWindow,
+} from "./tools";
 import { css } from "@emotion/css";
 
 interface FractalViewProps {
@@ -67,6 +77,18 @@ export const FractalView: FC<FractalViewProps> = ({
     }
   }, [canvas, size, iterations, zoom, colorizer]);
 
+  const events = {
+    ...tool.eventHandlers,
+    onMouseMove: (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+      if ("onMouseMove" in tool.eventHandlers) {
+        tool.eventHandlers.onMouseMove?.(e);
+      }
+      const { x, y } = getMousePosition(e);
+      const c = screenCoordinatesToComplex({ size, zoom, center }, x, y);
+      onMouseMove(x, y, c);
+    },
+  };
+
   return (
     <div
       className={css({
@@ -88,7 +110,7 @@ export const FractalView: FC<FractalViewProps> = ({
         width={size}
         height={size}
         style={{ cursor: "crosshair", top: 0, left: 0, position: "absolute" }}
-        {...tool.eventHandlers}
+        {...events}
       />
     </div>
   );

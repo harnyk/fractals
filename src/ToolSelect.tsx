@@ -1,7 +1,7 @@
-import { ChangeEvent, FC, useCallback } from "react";
-import { MouseTool } from "./tools";
-import { TbZoomInArea, TbZoomIn, TbZoomOut } from "react-icons/tb";
+import { FC } from "react";
+import { TbZoomIn, TbZoomInArea, TbZoomOut } from "react-icons/tb";
 import { RadioButtonsGroup } from "./RadioButtonsGroup";
+import { MouseTool } from "./tools";
 
 interface ToolSelectProps {
   value: MouseTool;
