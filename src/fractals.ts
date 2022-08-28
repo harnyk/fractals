@@ -102,7 +102,6 @@ export function renderFractalOnImageData(
 
   const colorizerFn = colorizerMap[colorizer];
 
-  console.time("renderFractal");
   let i = 0;
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
@@ -112,7 +111,6 @@ export function renderFractalOnImageData(
       colorizerFn(z, data, i);
     }
   }
-  console.timeEnd("renderFractal");
 }
 
 export function renderFractal(

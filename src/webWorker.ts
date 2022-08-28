@@ -4,27 +4,18 @@ onmessage = (event) => {
   const { data } = event;
   console.log("worker received message", data);
 
-  const {
-    data: imageData,
-    size,
-    maxIterations,
-    center,
-    zoom,
-    colorizer,
-  } = data;
-  console.log("start rendering");
-  renderFractalOnImageData(imageData, {
-    size,
-    maxIterations,
-    center,
-    zoom,
-    colorizer,
-  });
-    console.log("done rendering");
-    console.log("start sending message");
+  const { imageData, ...options } = data;
 
-    postMessage({ HUY: imageData });
-    console.log("done sending message");
+
+  console.time("renderFractalOnImageData");
+  renderFractalOnImageData(imageData, options);
+  console.timeEnd("renderFractalOnImageData");
+
+  console.log("done rendering");
+  console.log("start sending message");
+
+  postMessage(imageData);
+  console.log("done sending message");
 };
 
 export {};

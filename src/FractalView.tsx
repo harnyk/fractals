@@ -13,6 +13,7 @@ import {
   useZoomOnClick,
   useZoomWindow,
 } from "./tools";
+import { useWorker } from "./useWorker";
 
 interface FractalViewProps {
   size: number;
@@ -65,17 +66,41 @@ export const FractalView: FC<FractalViewProps> = ({
       ? zoomOutTool
       : zoomWindowTool;
 
+  const worker = useWorker();
+
   useEffect(() => {
     if (canvas.current) {
-      renderFractalWithWebWorker(canvas.current, {
-        size,
-        zoom,
+      const ctx = canvas.current.getContext("2d");
+      if (!ctx) {
+        return;
+      }
+      const imageData = ctx.getImageData(0, 0, size, size);
+      const buffer = imageData.data;
+      worker.run({
+        imageData: buffer,
         center,
+        size,
         maxIterations: iterations,
+        zoom,
         colorizer,
       });
     }
   }, [canvas, size, iterations, zoom, colorizer]);
+
+  useEffect(() => {
+    if (canvas.current) {
+      const ctx = canvas.current.getContext("2d");
+      if (!ctx) {
+        return;
+      }
+
+      if (worker.data) {
+        const imageData = ctx.getImageData(0, 0, size, size);
+        imageData.data.set(worker.data);
+        ctx.putImageData(imageData, 0, 0);
+      }
+    }
+  }, [canvas.current, worker.data]);
 
   const events = {
     ...tool.eventHandlers,
