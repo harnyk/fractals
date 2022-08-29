@@ -74,9 +74,21 @@ export const useZoomWindow = (
 
         ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
 
+        //draw thick white circle
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "white";
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+        ctx.stroke();
+        
+        
+        //draw black circle
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "black";
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
         ctx.stroke();
+
 
         //draw a radius line
         ctx.beginPath();

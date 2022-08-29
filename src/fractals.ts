@@ -1,19 +1,19 @@
 import Complex from "complex.js";
 
-function calculateFractalPoint(c: Complex, max: number) {
+type PointData = [z: Complex, iterations: number, diverged: boolean];
+
+function calculateFractalPoint(c: Complex, max: number): PointData {
   let z = new Complex(0);
   let n = 0;
   while (n < max) {
     z = z.mul(z).add(c);
-    // if (z.abs() > 2) {
-    //   return z;
-    // }
-    if (z.im > 2 || z.im < -2 || z.re > 2 || z.re < -2) {
-      return z;
+    if (z.im * z.im + z.re * z.re > 4) {
+      return [z, n, true];
     }
+
     n++;
   }
-  return z;
+  return [z, n, false];
 }
 
 export interface RenderFractalWindow {
@@ -27,22 +27,53 @@ export interface RenderFractalOptions extends RenderFractalWindow {
   colorizer: Colorizer;
 }
 
-type ColorizerFn = (z: Complex, buf: Uint8ClampedArray, index: number) => void;
+type ColorizerFn = (
+  p: PointData,
+  buf: Uint8ClampedArray,
+  index: number
+) => void;
 
 export enum Colorizer {
   Psychedelic = "psychedelic",
   Rainbow = "rainbow",
   BlackAndWhite = "blackAndWhite",
+  Iterations = "iterations",
+}
+
+function hsvrgb(
+  hsv: [number, number, number],
+  rgb: Uint8ClampedArray,
+  index: number
+): void {
+  const h = hsv[0] / 60;
+  const s = hsv[1] / 100;
+  let v = hsv[2] / 100;
+  const hi = Math.floor(h) % 6;
+
+  const f = h - Math.floor(h);
+  const p = 255 * v * (1 - s);
+  const q = 255 * v * (1 - s * f);
+  const t = 255 * v * (1 - s * (1 - f));
+  v *= 255;
+
+  rgb[index] = [v, q, p, p, t, v][hi];
+  rgb[index + 1] = [t, v, v, q, p, p][hi];
+  rgb[index + 2] = [p, p, t, v, v, q][hi];
+  rgb[index + 3] = 255;
 }
 
 const colorizerMap: { [key in Colorizer]: ColorizerFn } = {
-  psychedelic: (z: Complex, buf: Uint8ClampedArray, index: number) => {
-    buf[index] = Math.floor(z.re * 255);
-    buf[index + 1] = Math.floor(z.im * 255);
-    buf[index + 2] = Math.floor(z.re * 255);
-    buf[index + 3] = 255;
+  psychedelic: (p: PointData, buf: Uint8ClampedArray, index: number) => {
+    const [z, iterations, diverged] = p;
+    if (diverged) {
+      const hue = z.abs() * 100;
+      hsvrgb([hue, 100, iterations], buf, index);
+    } else {
+      hsvrgb([0, 0, 0], buf, index);
+    }
   },
-  rainbow: (z: Complex, buf: Uint8ClampedArray, index: number) => {
+  rainbow: (p: PointData, buf: Uint8ClampedArray, index: number) => {
+    const [z] = p;
     const v = z.abs();
     const brightness = v * 255;
     const hue = (z.arg() / (2 * Math.PI) + 1) * 255;
@@ -51,13 +82,20 @@ const colorizerMap: { [key in Colorizer]: ColorizerFn } = {
     buf[index + 2] = 255 - hue;
     buf[index + 3] = 255;
   },
-  blackAndWhite: (z: Complex, buf: Uint8ClampedArray, index: number) => {
+  blackAndWhite: (p: PointData, buf: Uint8ClampedArray, index: number) => {
+    const [z] = p;
     const v = z.abs();
     const brightness = v * 255;
     buf[index] = brightness;
     buf[index + 1] = brightness;
     buf[index + 2] = brightness;
     buf[index + 3] = 255;
+  },
+  iterations: (p: PointData, buf: Uint8ClampedArray, index: number) => {
+    const [, iterations, diverged] = p;
+    const value = diverged ? iterations : 0;
+    const hue = (value / 200) * 255;
+    hsvrgb([hue, 100, value], buf, index);
   },
 };
 

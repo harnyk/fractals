@@ -1,6 +1,6 @@
 import { FC, useCallback } from "react";
-import { TbRainbow } from "react-icons/tb";
-import {GiEmptyChessboard, GiSuperMushroom} from 'react-icons/gi'
+import { TbNumbers, TbRainbow } from "react-icons/tb";
+import { GiEmptyChessboard, GiSuperMushroom } from "react-icons/gi";
 import { Colorizer } from "./fractals";
 import { RadioButtonsGroup } from "./RadioButtonsGroup";
 
@@ -18,9 +18,22 @@ export const ColorizerSelect: FC<ColorizerSelectProps> = ({
       value={value}
       onChange={onChange}
       options={[
-        { value: Colorizer.BlackAndWhite, icon: <GiEmptyChessboard />, label: "Black and White" },
+        {
+          value: Colorizer.BlackAndWhite,
+          icon: <GiEmptyChessboard />,
+          label: "Black and White",
+        },
         { value: Colorizer.Rainbow, icon: <TbRainbow />, label: "Rainbow" },
-        { value: Colorizer.Psychedelic, icon: <GiSuperMushroom />, label: "Psychedelic" },
+        {
+          value: Colorizer.Psychedelic,
+          icon: <GiSuperMushroom />,
+          label: "Psychedelic",
+        },
+        {
+          value: Colorizer.Iterations,
+          icon: <TbNumbers />,
+          label: "Iterations",
+        },
       ]}
     />
   );
